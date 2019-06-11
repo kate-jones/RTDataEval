@@ -6,38 +6,48 @@ from dateutil.relativedelta import relativedelta
 '''
 Realtime Data Eval Script uses an NWIS url to obtain DV's for all UTWSC sites for the seven major pcodes.
 district_cd=49 can be changed to run for other WSC's.
+Retrieves DV's for the first day of each month, every day for a year. 
+On the second day of each month it starts retrievals for a new day. 
+After user has been running it daily for at least a year it is always retrieving 12 days.
+
+Instructions: Edit the increment_eval_date variable below to match the day you want the script to start running, then schedule it using cron or Windows Task Scheduler.
+If implementing this script for the first time or after a break in usage, the increment_eval_date below must be set.
+Do not edit other instances of the increment_eval_date variable.
 '''
+
+############### Edit this line only. ###############
+increment_eval_date = datetime.datetime(2019, 4, 1)
+####################################################
 
 '''
 Initialize variables.
 '''
 
 start_time_dt = datetime.datetime.now()  # Current date and time
+last_time_dt = start_time_dt - relativedelta(days=1)
 eval_dates = []  # List of eval date strings for use in url
 
 run_date_str = start_time_dt.strftime('%Y%m%d_%H%m%S')  # String for filename
-increment_eval_date = datetime.datetime(2018, 10, 1)
+if start_time_dt < increment_eval_date:
+  quit()
+one_year_eval_date = last_time_dt - relativedelta(months=11)
+if one_year_eval_date > increment_eval_date:
+  increment_eval_date = one_year_eval_date
 
 parameters = {'00060': 'q', '72019': 'wl', '00010': 'wt', '00095': 'sc', '00400': 'ph', '00300': 'do', '63680': 'turb'}
-
-'''
-Set last retrieval date to today if not the first of the month, otherwise to last month, to avoid retrieval of a partial day.
-'''
-
-if start_time_dt.strftime('%d') != '01':
-  last_time_dt = start_time_dt
-else:
-  last_time_dt = start_time_dt - relativedelta(months=1)
-print(last_time_dt)
 
 '''
 Create list of retrieval dates for first of each month since script was first run.
 '''
 
 while last_time_dt > increment_eval_date:
-  increment_eval_date_str = increment_eval_date.strftime('%Y-%m-%d')
+  increment_eval_date_str = f"{increment_eval_date.strftime('%Y-%m')}-01"
   eval_dates.append(increment_eval_date_str)
   increment_eval_date = increment_eval_date + relativedelta(months=1)
+
+if start_time_dt.strftime('%d') != '01' and start_time_dt != increment_eval_date:
+  start_time_str = f"{start_time_dt.strftime('%Y-%m')}-01"
+  eval_dates.append(start_time_str)
 
 print('\n\nRetrieving DV information for the following Parameter Codes:\n 00065: Discharge\n 72019: Groundwater Level\n 00010: Water Temperature\n 00095: Specific Conductance\n 00400: pH\n 00300: Dissolved Oxygen\n 63680: Turbidity\nRetrieval takes several minutes....\n\n')
 
@@ -61,6 +71,6 @@ for pcode in parameters.keys():
     with open(f'dv_{parameters[pcode]}_{run_date_str}.rdb', 'a') as f:
         f.write(content)
 
-  print(f'Retrieval complete for {parameters[pcode]}.\nScript execution time for {parameters[pcode]}: {datetime.datetime.now() - start_time_dt} seconds')
+  print(f'Retrieval complete for {parameters[pcode]}.\nScript execution time for {parameters[pcode]}: {datetime.datetime.now() - start_time_dt}')
 
 print('\n\nFiles created.\nRetrieval complete for all parameters.')
