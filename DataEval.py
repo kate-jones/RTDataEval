@@ -59,7 +59,7 @@ for pcode in parameters.keys():
 
   for ind_date in eval_dates:
 
-    url = f'https://waterdata.usgs.gov/nwis/dv?referred_module=qw&district_cd=49&nw_longitude_va=-179&nw_latitude_va=89&se_longitude_va=-1&se_latitude_va=1&coordinate_format=decimal_degrees&index_pmcode_{pcode}=1&group_key=NONE&sitefile_output_format=html_table&column_name=agency_cd&column_name=site_no&column_name=station_nm&range_selection=date_range&begin_date={ind_date}&end_date={ind_date}&format=rdb&date_format=YYYY-MM-DD&rdb_compression=value&list_of_search_criteria=lat_long_bounding_box%2Crealtime_parameter_selection'
+    url = f'https://waterdata.usgs.gov/nwis/dv?referred_module=qw&nw_longitude_va=-179&nw_latitude_va=89&se_longitude_va=-1&se_latitude_va=1&coordinate_format=decimal_degrees&index_pmcode_{pcode}=1&group_key=NONE&sitefile_output_format=html_table&column_name=agency_cd&column_name=site_no&column_name=station_nm&range_selection=date_range&begin_date={ind_date}&end_date={ind_date}&format=rdb&date_format=YYYY-MM-DD&rdb_compression=value&list_of_search_criteria=lat_long_bounding_box%2Crealtime_parameter_selection'
 
     r = requests.get(url)
     content = r.text
@@ -73,4 +73,4 @@ for pcode in parameters.keys():
 
   print(f'Retrieval complete for {parameters[pcode]}.\nScript execution time for {parameters[pcode]}: {datetime.datetime.now() - start_time_dt}')
 
-print('\n\nFiles created.\nRetrieval complete for all parameters.')
+print('\n\nFiles created.\nRetrieval complete for all parameters.\nPress any key to exit.')
